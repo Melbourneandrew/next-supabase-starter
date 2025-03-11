@@ -12,7 +12,7 @@ export default function NotFound() {
                     href="/"
                     className="text-[18px]"
                 >
-                    Return to Blog
+                    Return to Site
                 </Link>
             </div>
         </div>
