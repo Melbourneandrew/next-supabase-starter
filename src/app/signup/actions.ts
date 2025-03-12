@@ -1,29 +1,32 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
 
 export async function signup(formData: FormData) {
-    const cookieStore = cookies()
-    const supabase = await createClient()
+  const supabase = await createClient()
 
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-    }
+  // Validate inputs
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
 
-    const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-        },
-    })
+  // Basic validation
+  if (password !== confirmPassword) {
+    redirect('/signup?error=Passwords do not match')
+  }
 
-    if (error) {
-        return redirect('/signup?error=' + error.message)
-    }
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    },
+  })
 
-    return redirect('/auth/confirm-email')
+  if (error) {
+    redirect('/signup?error=' + error.message)
+  }
+
+  redirect('/login?message=Check your email to confirm your account')
 }
